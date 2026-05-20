@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #333;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px gray;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>💰 Expense & Budget Tracker</h2>
+
+<!-- Set Budget -->
+<div class="card">
+    <h3>Set Budget</h3>
+    <input id="month" placeholder="Month">
+    <input id="budget" placeholder="Amount">
+    <button onclick="setBudget()">Set Budget</button>
+</div>
+
+<!-- Add Expense -->
+<div class="card">
+    <h3>Add Expense</h3>
+    <input id="category" placeholder="Category">
+    <input id="amount" placeholder="Amount">
+    <input id="date" type="date">
+    <button onclick="addExpense()">Add Expense</button>
+</div>
+
+<!-- Dashboard -->
+<div class="card">
+    <h3>Dashboard</h3>
+    <button onclick="loadDashboard()">Load Dashboard</button>
+    <p id="dashboard"></p>
+</div>
+
+<!-- Expense List -->
+<div class="card">
+    <h3>Expense List</h3>
+    <button onclick="loadExpenses()">View Expenses</button>
+    <ul id="expenses"></ul>
+</div>
+
+<script>
+
+// Set Budget
+function setBudget() {
+    let data = {
+        month: document.getElementById('month').value,
+        amount: document.getElementById('budget').value
+    };
+
+    fetch('/set-budget/', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("✅ Budget Set Successfully");
+
+        // Clear inputs
+        document.getElementById('month').value = "";
+        document.getElementById('budget').value = "";
+    });
+}
+
+
+// Add Expense (UPDATED WITH CLEAR INPUTS)
+function addExpense() {
+    let data = {
+        category: document.getElementById('category').value,
+        amount: document.getElementById('amount').value,
+        date: document.getElementById('date').value
+    };
+
+    fetch('/add-expense/', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert("✅ Expense Added Successfully");
+
+        // Clear inputs after adding 
+        document.getElementById('category').value = "";
+        document.getElementById('amount').value = "";
+        document.getElementById('date').value = "";
+    });
+}
+
+
+// Dashboard
+function loadDashboard() {
+    fetch('/dashboard/')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('dashboard').innerHTML =
+            "<b>Total Spent:</b> ₹" + data.total_spent + "<br>" +
+            "<b>Budget:</b> ₹" + data.budget + "<br>" +
+            "<b>Remaining:</b> ₹" + data.remaining;
+    });
+}
+
+
+// View Expenses
+function loadExpenses() {
+    fetch('/view-expenses/')
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById('expenses');
+        list.innerHTML = "";
+
+        data.forEach(item => {
+            let li = document.createElement('li');
+            li.innerText = item.category + " - ₹" + item.amount + " (" + item.date + ")";
+            list.appendChild(li);
+        });
+    });
+}
+
+</script>
+
+</body>
+</html>
