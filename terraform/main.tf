@@ -5,24 +5,27 @@ provider "aws" {
 # ✅ Security Group
 resource "aws_security_group" "web_sg" {
   name        = "expense-app-sg"
-  description = "Allow SSH, HTTP, Django ports"
+  description = "Allow SSH, HTTP, and App access"
 
+  # ✅ SSH
   ingress {
-    description = "SSH"
+    description = "SSH Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ✅ HTTP
   ingress {
-    description = "HTTP"
+    description = "HTTP Web"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ✅ Django App
   ingress {
     description = "Django App"
     from_port   = 8000
@@ -32,7 +35,7 @@ resource "aws_security_group" "web_sg" {
   }
 
   # ✅ Outbound
-  egress {
+  ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -44,28 +47,28 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-# ✅ EC2 Instance
+# ✅ Amazon Linux EC2
 resource "aws_instance" "django_server" {
-  ami           = "ami-03f4878755434977f"
-  instance_type = "t3.small"   # ✅ Working
+  ami           = "ami-07a00cf47dbbc844c"   # ✅ Amazon Linux (FIXED)
+  instance_type = "t3.micro"
 
-  key_name = "expense-key"
+  key_name = "expense-final"
 
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   associate_public_ip_address = true
 
-  # ✅ This ensures better SSH compatibility
   metadata_options {
     http_tokens = "optional"
   }
 
   tags = {
-    Name = "ExpenseTrackerServer"
+    Name = "expense-tracker"
   }
 }
 
-# ✅ Output
+# ✅ Output Public IP
 output "public_ip" {
-  value = aws_instance.django_server.public_ip
+  description = "Public IP of EC2"
+  value       = aws_instance.django_server.public_ip
 }

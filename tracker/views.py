@@ -1,52 +1,81 @@
-import json
+
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import Expense, Budget
-
-# Home UI
+from django.views.decorators.csrf import csrf_exempt
+import json
+ 
+# Home Page (Frontend UI)
 def home(request):
     return render(request, 'index.html')
-
+ 
+ 
 # Add Expense
 @csrf_exempt
 def add_expense(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        Expense.objects.create(**data)
-        return JsonResponse({"message": "Expense added successfully"})
-    return JsonResponse({"error": "POST required"}, status=405)
-
-# View Expenses
+        try:
+            data = json.loads(request.body)
+ 
+            Expense.objects.create(
+                category=data.get('category'),
+                amount=data.get('amount'),
+                date=data.get('date')
+            )
+ 
+            return JsonResponse({"message": "Expense added successfully"})
+       
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+ 
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+ 
+ 
+#  View Expenses
 def view_expenses(request):
-    return JsonResponse(list(Expense.objects.values()), safe=False)
-
-# Delete Expense
-@csrf_exempt
-def delete_expense(request, id):
-    Expense.objects.filter(id=id).delete()
-    return JsonResponse({"message": "Expense deleted successfully"})
-
+    expenses = list(Expense.objects.values())
+    return JsonResponse(expenses, safe=False)
+ 
+ 
 # Set Budget
 @csrf_exempt
 def set_budget(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        Budget.objects.update_or_create(id=1, defaults=data)
-        return JsonResponse({"message": "Budget set successfully"})
-    return JsonResponse({"error": "POST required"}, status=405)
-
+        try:
+            data = json.loads(request.body)
+ 
+            # Keep only one budget (PoC purpose)
+            Budget.objects.all().delete()
+ 
+            Budget.objects.create(
+                month=data.get('month'),
+                amount=data.get('amount')
+            )
+ 
+            return JsonResponse({"message": "Budget set successfully"})
+       
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+ 
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+ 
+ 
 # Dashboard
 def dashboard(request):
-    total = sum(e.amount for e in Expense.objects.all())
-    budget_obj = Budget.objects.first()
-    budget = budget_obj.amount if budget_obj else 0
+    expenses = Expense.objects.all()
+    total = sum(e.amount for e in expenses)
+ 
+    budget = Budget.objects.first()
+    budget_amount = budget.amount if budget else 0
+ 
     return JsonResponse({
         "total_spent": total,
-        "budget": budget,
-        "remaining": budget - total
+        "budget": budget_amount,
+        "remaining": budget_amount - total
     })
-
-# Health Check
+ 
+ 
+#  Health API (for Grafana)
 def health(request):
     return JsonResponse({"status": "OK"})
+ 

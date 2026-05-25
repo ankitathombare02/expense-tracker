@@ -1,0 +1,2 @@
+[web]
+3.111.215.218 ansible_user=ubuntu ansible_ssh_private_key_file=/home/anthomba/expense-final.pem
