@@ -1,0 +1,14 @@
+# Python
+env/
+__pycache__/
+*.pyc
+db.sqlite3
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# OS
+.DS_Store
+Thumbs.db
