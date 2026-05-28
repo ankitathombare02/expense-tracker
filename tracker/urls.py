@@ -1,15 +1,13 @@
-
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home),                        
+    path('', views.home_page),      # ✅ Landing page
+    path('app/', views.home),       # ✅ Main dashboard page
 
-    path('add-expense/', views.add_expense),     
-    path('view-expenses/', views.view_expenses),  
-    path('set-budget/', views.set_budget),       
-    path('dashboard/', views.dashboard),          
-
-    path('health/', views.health),               
-            
+    path('add-expense/', views.add_expense),
+    path('view-expenses/', views.view_expenses),
+    path('set-budget/', views.set_budget),
+    path('dashboard/', views.dashboard),
+    path('health/', views.health),
 ]
